@@ -4,9 +4,10 @@
 .MODEL  FLAT
         
 PUBLIC  _STST                    ;외부에서 접근이 가능하게 한다. 이때 Under Bar를 붙여줘야 외부에서 볼 수가 있다.
+PUBLIC  _MD
         
-  .CODE                           ;CODE영역 알림.
-_STST    PROC    NEAR32          ;Procedure 의 시작이라는 것을 알리고, NEAR32은 그냥 일반 주소 체계를 쓰겠다는 말.
+.CODE                           ;CODE영역 알림.
+_STST   PROC    NEAR32          ;Procedure 의 시작이라는 것을 알리고, NEAR32은 그냥 일반 주소 체계를 쓰겠다는 말.
         ;; Entry Point
 
         push    ebp             ;main 함수의 ebp값을 기록해 둔다. ::    Entry Code
@@ -43,12 +44,37 @@ _STST    PROC    NEAR32          ;Procedure 의 시작이라는 것을 알리고, NEAR32은 
         mov     esp,    ebp     ;esp를 끌어내림
         pop     ebp             ;Stack에 있던 return adress를 다시 ebp에 넣는다.
         
-        
-
-        
+                
         ret                     ;return 값은 EAX 에 들어감 
 
 _STST    ENDP                    ;함수의 끝을 알림.
+
+        
+_MD    PROC    NEAR32           ;Memory_Display
+        ;; Entry Point
+
+        push    ebp  
+        mov     ebp,    esp
+
+        push    ebx             ;ebx를 사용하기 위해서 STACK에 올린다.
+        ;; ------------------------------------------------------------
+
+        ;; 리턴값은 EAX를 사용해야 함.
+        mov     ebx,    [ebp + 8] ;ebx에 인자로 받은 주소를 대입.
+
+        mov     eax,    0       ;eax 를 0으로 초기화
+        mov     al,     [ebx]   
+        
+        ;; ------------------------------------------------------------
+        ;; exit point
+        pop     ebx             ;ebx를 복구시켜 놓는다.
+        
+        mov     esp,    ebp
+        pop     ebp        
+        
+        ret                     ;return 값은 EAX 에 들어감 
+
+_MD    ENDP                    ;함수의 끝을 알림.
       
 END                            
 
