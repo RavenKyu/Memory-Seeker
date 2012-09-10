@@ -1,19 +1,19 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include "hex_viewer.h"
 
 #define COMMAND_LEN     100
 
 enum CommandNum                 /* enum은 숫자를 문자화 시키는 장점을 활용 */
 {
-    REGISTER_DISPLAY = 100,     /* 초기 숫자를 100으로 초기화 */
+    REGISTER_DISPLAY = 100,     /* 초기 숫자를 100으로 초기화. Switch문에서 사용한다. */
     Q,
     QUIT,
     HELP,
     H,
     MD_,
     EXIT_NUM,
-
 };
 
 typedef struct _Context
@@ -49,9 +49,10 @@ unsigned char MD(void *);
 
 int main()
 {
-    int i_len;
     char command[COMMAND_LEN];
-    void *vp;
+
+    void *vp;                   /* 인수로 사용, 주소 */
+    int i_len;
     
     Context registers;
     CommandMap *p_map;
@@ -102,7 +103,7 @@ int main()
             switch(p_map -> cmd_num) /* 함수 인자를 설정한다. */
             {
             case REGISTER_DISPLAY:
-                vp = &r;
+                vp = &registers;
                 break;
         
             case QUIT:
@@ -180,9 +181,9 @@ int Memory_Display(void *vp, int i_not_use) /* 입력받은 위치의 메모리 
     scanf("%x", (int *)&ucp);
 
     /* Debuggig Code -------------------------------------------------- */
-    printf("C Language  :: %02X\n", *ucp);
-    printf("Assembler   :: %02X\n", MD(ucp));
+    printf("C Language  :: %02X\n", *ucp); /* C로 직접 나타낼때 */
+    printf("Assembler   :: %02X\n", MD(ucp)); /* Assembly 함수를 사용할때 */
     /* Debuggig Code -------------------------------------------------- */
-        
+    hex_viewer(ucp);
     return MD(ucp);
 }
