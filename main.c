@@ -11,7 +11,9 @@ enum CommandNum                 /* enum은 숫자를 문자화 시키는 장점�
     QUIT,
     HELP,
     H,
+    MD_,
     EXIT_NUM,
+
 };
 
 typedef struct _Context
@@ -31,15 +33,19 @@ typedef struct _Context
 typedef struct _CommandMap
 {
     char *cmdCommand;
-    int (*cmdfp)(void *, int);
+    int (*cmdfp)(void *, int);  /* 함수 포인터 사용 */
     enum CommandNum cmd_num;
 } CommandMap;
 
+/* C 언어 함수 원형 ------------------------------------- */
 int Register_Display(void *, int);
+int Memory_Display(void *, int);
 int Quit(void *, int);
 int Help(void *, int);
-void STST(Context *);
 
+/* 어셈블리 함수 원형 ----------------------------------- */
+void STST(Context *);           /* 메모리의 상태를 보여 준다. */
+unsigned char MD(void *);
 
 int main()
 {
@@ -47,7 +53,7 @@ int main()
     char command[COMMAND_LEN];
     void *vp;
     
-    Context r;
+    Context registers;
     CommandMap *p_map;
     
     CommandMap c_map[] =
@@ -58,15 +64,17 @@ int main()
             {"HELP\n",  Help, H},
             {"H\n",     Help, H},
             {"?\n",     Help, H},
+            {"MD\n",    Memory_Display, MD_},
             {0, 0}
         };
     
-    STST(&r);
-    Register_Display(&r, 0);
+    STST(&registers);           /* 구조체 registers에 레지스터의 주소를 저장  */
+    Register_Display(&registers, 0); /* 레지스터를 출력한다. */
     
     while(1)
     {
-        fflush(stdin);
+        fflush(stdin);          /* 키보드 버퍼를 비운다. */
+
         putchar('>');
         putchar(' ');
 
@@ -108,6 +116,9 @@ int main()
 
             case HELP:
                 break;
+
+            case MD_:
+                break;
             }
             
             (*(p_map -> cmdfp))(vp, i_len); /* 함수 호출 */
@@ -138,7 +149,7 @@ int Register_Display(void *r, int not_use)
 
 int Quit(void *V_not_use, int i_not_use)
 {
-    /* Require Free Code */
+    /* 나중에 동적할당 받은 부분을 해제 해 줄 코드가 필요하다. */
     exit(0);
     return 0;
 }
@@ -159,4 +170,19 @@ int Help(void *v_not_use, int i_not_use)
     printf("QUIT(Q)   : Exit Program\n");
     
     return 0;
+}
+
+int Memory_Display(void *vp, int i_not_use) /* 입력받은 위치의 메모리 맵을 보여 준다. */
+{
+    unsigned char *ucp;
+    
+    printf("Enter Address you want as Hex : ");
+    scanf("%x", (int *)&ucp);
+
+    /* Debuggig Code -------------------------------------------------- */
+    printf("C Language  :: %02X\n", *ucp);
+    printf("Assembler   :: %02X\n", MD(ucp));
+    /* Debuggig Code -------------------------------------------------- */
+        
+    return MD(ucp);
 }
