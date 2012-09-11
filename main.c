@@ -2,8 +2,10 @@
 #include <ctype.h>
 #include <string.h>
 #include "hex_viewer.h"
+#include <malloc.h>
 
 #define COMMAND_LEN     100
+#define MAX_PROGRAM_SIZE        0x10000 /* 적재할 프로그램의 최대 크기의 1/2 */
 
 enum CommandNum                 /* enum은 숫자를 문자화 시키는 장점을 활용 */
 {
@@ -45,7 +47,13 @@ int Help(void *, int);
 
 /* 어셈블리 함수 원형 ----------------------------------- */
 void STST(Context *);           /* 메모리의 상태를 보여 준다. */
-unsigned char MD(void *);
+
+/* char MD(void *); */
+unsigned char MD(void *);       /* unsigned 형으로 선언하지 않으면 앞자리가
+                                 * 8이라면 부호처리를 시도해서 마이너스가된다. */
+
+static unsigned char *mem;      
+static unsigned char *mem_end;
 
 int main()
 {
@@ -68,8 +76,18 @@ int main()
             {"MD\n",    Memory_Display, MD_},
             {0, 0}
         };
+
+    mem = (unsigned char *)malloc(MAX_PROGRAM_SIZE * 2); /* 128Kb 할당 받았다. */
+    if(0 == mem)                                         /* 메모리할당 성공여부를 검사 */
+    {
+        printf("Failed to allocate enough memory.\n"); 
+        return 0;
+    }
+    mem_end = mem;
     
     STST(&registers);           /* 구조체 registers에 레지스터의 주소를 저장  */
+    printf("Enable range of Dynamic Memory Address :: %08X ~ %08X\n", mem, mem_end + MAX_PROGRAM_SIZE * 2 - 1); /* 0 부터 시작하므로 -1을 한다. */
+    
     Register_Display(&registers, 0); /* 레지스터를 출력한다. */
     
     while(1)
@@ -150,7 +168,8 @@ int Register_Display(void *r, int not_use)
 
 int Quit(void *V_not_use, int i_not_use)
 {
-    /* 나중에 동적할당 받은 부분을 해제 해 줄 코드가 필요하다. */
+    free(mem);                  /* 동적할당 받은 메모리를 풀어준다. */
+
     exit(0);
     return 0;
 }
@@ -178,7 +197,7 @@ int Memory_Display(void *vp, int i_not_use) /* 입력받은 위치의 메모리 
     unsigned char *ucp;
     
     printf("Enter Address you want as Hex : ");
-    scanf("%x", (int *)&ucp);
+    scanf_s("%x", &ucp); 
 
     /* Debuggig Code -------------------------------------------------- */
     printf("C Language  :: %02X\n", *ucp); /* C로 직접 나타낼때 */
