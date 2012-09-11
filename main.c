@@ -55,6 +55,10 @@ unsigned char MD(void *);       /* unsigned 형으로 선언하지 않으면 앞
 static unsigned char *mem;      
 static unsigned char *mem_end;
 
+static unsigned char *code;
+static unsigned char *data;
+static unsigned char *stack;
+
 int main()
 {
     char command[COMMAND_LEN];
@@ -78,12 +82,21 @@ int main()
         };
 
     mem = (unsigned char *)malloc(MAX_PROGRAM_SIZE * 2); /* 128Kb 할당 받았다. */
+
     if(0 == mem)                                         /* 메모리할당 성공여부를 검사 */
     {
         printf("Failed to allocate enough memory.\n"); 
         return 0;
     }
-    mem_end = mem;
+    mem_end = mem;              
+    
+    code = (unsigned char *)((unsigned int)mem & 0xffff0000) + MAX_PROGRAM_SIZE; /* 포인터는 & 연산을 할 수 없기 때문에 캐스팅으로 바꿔 연산 한다. */
+    data = code + 0x2000;       /* data 영역의 주소는 코드에서 2000번지 내려온 곳 */
+    stack = mem_end + MAX_PROGRAM_SIZE * 2 - 1; /* 스택영역은 메모리 제일 밑에서 부터. */
+
+    printf("Code address  :: 0x%08X\n", code); /* 메모리 주소 영역을 출력 */
+    printf("Data address  :: 0x%08X\n", data); 
+    printf("Stack address :: 0x%08X\n", stack); 
     
     STST(&registers);           /* 구조체 registers에 레지스터의 주소를 저장  */
     printf("Enable range of Dynamic Memory Address :: %08X ~ %08X\n", mem, mem_end + MAX_PROGRAM_SIZE * 2 - 1); /* 0 부터 시작하므로 -1을 한다. */
