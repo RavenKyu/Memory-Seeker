@@ -88,15 +88,22 @@ _LDST   PROC    NEAR32           ;레지스터 값을 다시 CPU에 넣는다.
         mov     [ebx - 4],      eax ;esp_main의 값을 가지고 있는 ebx의 값에서 4를 뺀 위치에
                                 ;eip의 값을 가지고 있는 eax를 넣는다.
 
-        popad                   ;edi부터 역순으로 다시 레지스터에 넣는다.
+        ;; popad                ;edi부터 역순으로 다시 레지스터에 넣는다.
+        pop     edi
+        pop     esi
+        pop     ebp
+        ;; pop     esp
+        add     esp,    4
+        pop     ebx
+        pop     edx
+        pop     ecx
+        pop     eax
 
         mov     esp,    [esp - 20] ;esp의 위치는 현재 context의 가장 아래이고, esp에다가 현재 위치에서 -20한 위치에 있는
                                 ;esp_main의 주소를 가리키게 한다.
         sub     esp,    4       ;main의 esp를 return address를 가리키게 하기 위해 4를 빼준다.
         
-        
-          
-        
+                
         ret                     ;return 값은 EAX 에 들어감 
 
 _LDST   ENDP                    ;함수의 끝을 알
