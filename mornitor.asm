@@ -5,7 +5,8 @@
         
 PUBLIC  _STST                    ;외부에서 접근이 가능하게 한다. 이때 Under Bar를 붙여줘야 외부에서 볼 수가 있다.
 PUBLIC  _MD
-        
+;; PUBLIC  _LDST
+      
 .CODE                           ;CODE영역 알림.
 _STST   PROC    NEAR32          ;Procedure 의 시작이라는 것을 알리고, NEAR32은 그냥 일반 주소 체계를 쓰겠다는 말.
         ;; Entry Point
@@ -75,6 +76,30 @@ _MD    PROC    NEAR32           ;Memory_Display
         ret                     ;return 값은 EAX 에 들어감 
 
 _MD    ENDP                    ;함수의 끝을 알림.
+
+_LDST   PROC    NEAR32           ;레지스터 값을 다시 CPU에 넣는다.
+
+        mov     esp,    [esp + 4] ;esp가 context를 가리킨다.
+
+        popfd                   ;efl을 pop한다.
+        pop     eax             ;eip를 eax에 넣는다.
+
+        mov     ebx,    [esp + 12] ;esp_main의 주소를 ebx에 넣는다.
+        mov     [ebx - 4],      eax ;esp_main의 값을 가지고 있는 ebx의 값에서 4를 뺀 위치에
+                                ;eip의 값을 가지고 있는 eax를 넣는다.
+
+        popad                   ;edi부터 역순으로 다시 레지스터에 넣는다.
+
+        mov     esp,    [esp - 20] ;esp의 위치는 현재 context의 가장 아래이고, esp에다가 현재 위치에서 -20한 위치에 있는
+                                ;esp_main의 주소를 가리키게 한다.
+        sub     esp,    4       ;main의 esp를 return address를 가리키게 하기 위해 4를 빼준다.
+        
+        
+          
+        
+        ret                     ;return 값은 EAX 에 들어감 
+
+_LDST   ENDP                    ;함수의 끝을 알
       
 END                            
 
