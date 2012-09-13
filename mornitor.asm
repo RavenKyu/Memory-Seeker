@@ -5,7 +5,7 @@
         
 PUBLIC  _STST                    ;외부에서 접근이 가능하게 한다. 이때 Under Bar를 붙여줘야 외부에서 볼 수가 있다.
 PUBLIC  _MD
-;; PUBLIC  _LDST
+PUBLIC  _LDST
       
 .CODE                           ;CODE영역 알림.
 _STST   PROC    NEAR32          ;Procedure 의 시작이라는 것을 알리고, NEAR32은 그냥 일반 주소 체계를 쓰겠다는 말.
@@ -20,13 +20,13 @@ _STST   PROC    NEAR32          ;Procedure 의 시작이라는 것을 알리고, NEAR32은 �
         ;; ------------------------------------------------------------
 
         pushfd
-        mov     esp,    [ebp + 8]
-        add     esp,    40
+        mov     esp,    [ebp + 8] ;인수로 받은 구조체 메모리에 진입
+        add     esp,    40 ;eax가 위치한 자리를 Stack Point가 가리키게 함
 
-        pushad
+        pushad                  ;edi 까지 모두 스택에 넣는다.
 
-        push    [ebp + 4]
-        push    [ebp - 4]
+        push    [ebp + 4]  ;return address의 값을 eip가 가리키게 한다.
+        push    [ebp - 4]  ;
 
         add     esp,    24      
 
