@@ -26,6 +26,7 @@ enum CommandNum                 /* enum은 숫자를 문자화 시키는 장점�
     MC,
     CODE,
     DATA,
+    P,
     EXIT_NUM,
 };
 
@@ -53,6 +54,7 @@ typedef struct _CommandMap
 /* C 언어 함수 원형 ------------------------------------- */
 int Register_Display(void *, int);
 int Memory_Display(void *, int);
+int Memory_Display_Status(void *, int);
 int Memory_Display_Code(void *, int);
 int Memory_Display_Data(void *, int);
 int Quit(void *, int);
@@ -92,6 +94,7 @@ int main()
     CommandMap c_map[] =
         {
             {"R\n",     Register_Display, REGISTER_DISPLAY},
+            {"P\n",     Memory_Display_Status, P},
             {"Q\n",     Quit, Q},
             {"QUIT\n",  Quit, Q},
             {"HELP\n",  Help, H},
@@ -100,11 +103,9 @@ int main()
             {"MD\n",    Memory_Display, MD_},
             {"GO\n",    Go, GO},
             {"LOAD\n",  Load, LOAD},
-            
             {"MC\n",  Clear_mem, MC},
             {"CODE\n",  Memory_Display_Code, CODE},
             {"DATA\n",  Memory_Display_Data, DATA},
-            
             {0, 0}
         };
 
@@ -115,18 +116,18 @@ int main()
         printf("Failed to allocate enough memory.\n"); 
         return 0;
     }
-    mem_end = mem + 0x1ffff;
+    mem_end = mem + ((MAX_PROGRAM_SIZE * 2) - 1); /* 동적할당 받은 메모리의 끝이자 스택의 시작 부분 */
     
     code = (unsigned char *)((unsigned int)mem & 0xffff0000) + MAX_PROGRAM_SIZE; /* 포인터는 & 연산을 할 수 없기 때문에 캐스팅으로 바꿔 연산 한다. */
     data = code + 0x2000;       /* data 영역의 주소는 코드에서 2000번지 내려온 곳 */
     stack = mem_end; /* 스택영역은 메모리 제일 밑에서 부터. */
 
-    printf("Code address  :: 0x%08X\n", code); /* 메모리 주소 영역을 출력 */
-    printf("Data address  :: 0x%08X\n", data); 
-    printf("Stack address :: 0x%08X\n", stack); 
-    
     STST(&cpu_info);           /* 구조체 cpu_info에 레지스터의 주소를 저장  */
-    printf("Enable range of Dynamic Memory Address :: %08X ~ %08X\n", mem, mem_end + MAX_PROGRAM_SIZE * 2 - 1); /* 0 부터 시작하므로 -1을 한다. */
+
+    Memory_Display_Status(0, 0);
+    
+    
+    printf("Enable range of Dynamic Memory Address :: %08X ~ %08X\n", mem, mem_end); /* 0 부터 시작하므로 -1을 한다. */
     
     Register_Display(&cpu_info, 0); /* 레지스터를 출력한다. */
     
@@ -371,6 +372,15 @@ int Load(void *v_not_use, int i_not_use)           /* 프로그램을 할당받�
     {
         printf("Loading the file is done.\n"); /* 모든 데이터를 메모리에 적재 했음을 알린다. */
     }
+    
+    return 0;
+}
+
+int Memory_Display_Status(void *v_not_use, int i_not_use) /* 메모리의 영역 상태를 출력한다. */
+{
+    printf("Code address  :: 0x%08X\n", code); /* 메모리 주소 영역을 출력 */
+    printf("Data address  :: 0x%08X\n", data); 
+    printf("Stack address :: 0x%08X\n", stack); 
     
     return 0;
 }
