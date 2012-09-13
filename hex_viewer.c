@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include "hex_viewer.h"
 
-int hex_viewer(int *address)
+int hex_viewer(unsigned char *address)
 {
     int i_loop;
     /* int i_num = 0xABCDEF88; */
@@ -25,9 +25,10 @@ int hex_viewer(int *address)
            " Address ");
 
     // 주소 마지막 바이트 출력 시작 : 불러들인 주소의 마지막 한 바이트를 알아보기 쉽게 띄워준다.
+    printf("  ");               /* 공백을 맞추기 위함. */
     for(i_cnt = 0;i_cnt <= 15;++i_cnt)
     {
-        printf("%02X ", ((unsigned char)c_num_ptr + i_cnt - 16));
+        printf("%02X ", ((unsigned char)c_num_ptr + i_cnt));
         /* printf("%02X ", ((unsigned char)MD(address) + i_cnt)); */
         //fprintf(fpout, "%02X ",((unsigned char)c_num_ptr + i_cnt));
     }
@@ -38,7 +39,7 @@ int hex_viewer(int *address)
     // 몸체 시작. : 주소와 해당 주소의 실제값을 1 바이트 단위로 출력, 아스키 코드 표시.
     for(i_loop = 0;i_loop <= 10;++i_loop) // 몇 줄의 주소를 띄울 것인가를 i_loop의 비교값으로 결정.
     {
-        printf("%08x ", c_num_ptr); // 주소 출력
+        printf("0x%08x ", c_num_ptr); // 주소 출력
         fprintf(fpout, "%08x ", c_num_ptr); // 텍스트 파일 출력.
 
         // 1바이트씩 주소 값을 출력 시작. :
@@ -71,6 +72,7 @@ int hex_viewer(int *address)
         address = address + 16; // 다음 줄의 올바른 주소값은 위에서 16바이트를 출력했으니 다음줄은 기준이 되고 있는 첫바이트> 보다 16이 많다.
         c_num_ptr = c_num_ptr + 16; // 다음 줄의 올바른 주소값은 위에서 16바이트를 출력했으니 다음줄은 기준이 되고 있는 첫바이트> 보다 16이 많다.
     }
+    putchar('\n');
     fclose(fpout); // 파일을 닫아준다.
     return 0;
 }
