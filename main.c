@@ -56,7 +56,7 @@ typedef struct _CommandMap
 int Register_Display(void *, int);
 int Memory_Display(void *, int);
 int Memory_Display_Status(void *, int);
-int Memory_Display_Code(void *, int);
+int Display_Memory_Map(void *, int);
 int Memory_Display_Data(void *, int);
 int Memory_Display_Stack(void *, int);
 int Quit(void *, int);
@@ -103,9 +103,9 @@ int main()
             {"GO\n",    Go, GO},
             {"LOAD\n",  Load, LOAD},
             {"MC\n",  Clear_mem, MC},
-            {"CODE\n",  Memory_Display_Code, CODE},
-            {"DATA\n",  Memory_Display_Data, DATA},
-            {"STACK\n",  Memory_Display_Stack, STACK},
+            {"CODE\n",  Display_Memory_Map, CODE},
+            {"DATA\n",  Display_Memory_Map, DATA},
+            {"STACK\n",  Display_Memory_Map, STACK},
             {0, 0}
         };
 
@@ -189,12 +189,15 @@ int main()
                 break;
 
             case CODE:
+                vp = code;
                 break;
 
             case DATA:
+                vp = data;
                 break;
 
             case STACK:
+                vp = stack - 0xff;
                 break;
             }
             
@@ -261,21 +264,9 @@ int Memory_Display(void *vp, int i_not_use) /* 입력받은 위치의 메모리 
     return MD(ucp);
 }
 
-int Memory_Display_Code(void *vp, int i_not_use) /* 메모리의 CODE 영역의 Hex map을 출력한다. */
+int Display_Memory_Map(void *vp, int i_not_use) /* 메모리의 CODE 영역의 Hex map을 출력한다. */
 {
-    hex_viewer(code);
-    return 0;
-}
-
-int Memory_Display_Data(void *vp, int i_not_use) /* 메모리의 DATA 영역의 Hex map을 출력한다. */
-{
-    hex_viewer(data);
-    return 0;
-}
-
-int Memory_Display_Stack(void *v_not_use, int i_not_use) /* 메모리의 STACK 영역을 출력한다. */
-{
-    hex_viewer(stack - 0xff);   /* 스택의 맨 아랫부분이 끝에 맞춰서 출력 될 수 있게 해준다. */
+    hex_viewer(vp);
     return 0;
 }
 
