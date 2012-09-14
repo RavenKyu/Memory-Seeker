@@ -57,7 +57,6 @@ typedef struct _CommandMap
 int Register_Display(void *, int);
 int Memory_Display(void *, int);
 int Memory_Display_Status(void *, int);
-int Display_Memory_Map(void *, int);
 int Quit(void *, int);
 int Help(void *, int);
 int Go(void *, int);
@@ -104,9 +103,9 @@ int main()
             {"GO\n",    Go, GO},
             {"LOAD\n",  Load, LOAD},
             {"MC\n",  Clear_mem, MC},
-            {"CODE\n",  Display_Memory_Map, CODE},
-            {"DATA\n",  Display_Memory_Map, DATA},
-            {"STACK\n",  Display_Memory_Map, STACK},
+            {"CODE\n",  Memory_Display, CODE},
+            {"DATA\n",  Memory_Display, DATA},
+            {"STACK\n",  Memory_Display, STACK},
             {0, 0}
         };
 
@@ -124,7 +123,7 @@ int main()
     stack = mem_end; /* 스택영역은 메모리 제일 밑에서 부터. */
 
     STST(&cpu_info);           /* 구조체 cpu_info에 레지스터의 주소를 저장  */
-
+	
     Memory_Display_Status(0, 0); /* 메모리의 주소 범위를 보여준다. */
     
     printf("Enable range of Dynamic Memory Address :: %08X ~ %08X\n", mem, mem_end); /* 0 부터 시작하므로 -1을 한다. */
@@ -141,7 +140,7 @@ int main()
         fgets(command, COMMAND_LEN, stdin); /* 메뉴를 입력받는다. */
         
         /* 대소문자 구별없이 입력받기 위해, 모든 문자를 대문자로 바꾼다. */
-        for(i_len = strlen(command) - 1;i_len >= 0;--i_len) 
+        for(i_len = strlen(command) - 1; i_len >= 0; --i_len) 
         {
             command[i_len] = toupper(command[i_len]);
         }
@@ -156,64 +155,82 @@ int main()
 
         if(0x0A == command[0])  /* 엔터키만 눌러 졌을 때  */
         {
+			printf("%08X\n", vp);
             if((mem <= vp) && (mem_end >= vp)) /* 메모리가 동적할당 받은 범위를 벗어나서 런타임 에러를 일으키지 않게 한다. */
             {
                 add_address = add_address + 256; /* 16 x 16 으로 다음 페이지 만큼 넣어둔다. */
                 printf("Next page of memory.\n");
-                Display_Memory_Map(vp, add_address); /* 인자로 인자로 받았던 값과 추가할 값을 넣는다. */
+                Memory_Display(vp, add_address); /* 인자로 인자로 받았던 값과 추가할 값을 넣는다. */
             }
         }
 
         if(0 != p_map -> cmdCommand) /* 유효한 명령을 입력 했는가? 를 검사 */
         {
-            vp = 0;
-            i_len = 0;
-            
-            switch(p_map -> cmd_num) /* 함수 인자를 설정한다. */
+			switch(p_map -> cmd_num) /* 함수 인자를 설정한다. */
             {
             case REGISTER_DISPLAY:
                 vp = &cpu_info;
+				i_len = 0;
                 break;
         
             case QUIT:
+				vp = 0;
+				i_len = 0;
                 break;
                 
             case Q:
+				vp = 0;
+				i_len = 0;
                 break;
 
             case H:
+				vp = 0;
+				i_len = 0;
                 break;
 
             case HELP:
+				vp = 0;
+				i_len = 0;
                 break;
 
             case MD_:
+				i_len = -1;
                 break;
 
             case GO:
+				vp = 0;
+				i_len = 0;
                 break;
 
             case LOAD:
+				vp = 0;
+				i_len = 0;
                 break;
 
             case MC:
+				vp = 0;
+				i_len = 0;
                 break;
 
             case CODE:
+				vp = 0;
+				i_len = 0;
                 vp = code;
                 break;
 
             case DATA:
-                vp = data;
+				vp = data;
+				i_len = 0;
                 break;
 
             case STACK:
                 vp = stack - 0xff;
-                break;
+				i_len = 0;
+				break;
             }
             
-            add_address = 0;                       /* 초기화 */
-            (*(p_map -> cmdfp))(vp, i_len); /* 함수 호출 */
+            add_address = -1;                       /* 초기화 */
+            vp = (*(p_map -> cmdfp))(vp, i_len); /* 함수 호출 */
         }
     } 
     
@@ -265,22 +282,17 @@ int Help(void *v_not_use, int i_not_use)
     return 0;
 }
 
-int Memory_Display(void *vp, int i_not_use) /* 입력받은 위치의 메모리 맵을 보여 준다. */
+int Memory_Display(void *vp, int add_address) /* 입력받은 위치의 메모리 맵을 보여 준다. */
 {
-    unsigned char *ucp;
-    
-    printf("Enter Address you want as Hex : ");
-    scanf_s("%x", &ucp); 
-
-    hex_viewer(ucp);
-    return MD(ucp);
-}
-
-int Display_Memory_Map(void *vp, int i) /* 메모리의 CODE 영역의 Hex map을 출력한다. */
-{
-    hex_viewer(((int)vp + i));
-
-    return 0;
+	if(0 > add_address)			/* add_address가 음수라면 주소값을 받도록 한다. MD 기능을 사용하게 한다. */
+	{
+		printf("Enter Address you want as Hex : ");
+		scanf_s("%x", &vp);
+		add_address = 0;		/* 다음 페이지로 넘어가기 위해서 0으로 설정 */
+	}
+	hex_viewer((unsigned char *)((int)vp + add_address)); /* 메모리 맵을 출력한다. */
+	
+    return vp;
 }
 
 int Go(void *v_not_use, int i_not_use) /* 메모리에 적재된 프로그램을 실행한다. */
@@ -305,7 +317,6 @@ int Clear_mem(void *v_not_use, int i_not_use) /* 메모리를 초기화 시켜�
 
     return 0;
 }
-
 
 int Load(void *v_not_use, int i_not_use)           /* 프로그램을 할당받은 메모리에 적재 시켜준다 */
 {
