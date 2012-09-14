@@ -23,11 +23,12 @@ enum CommandNum                 /* enum은 숫자를 문자화 시키는 장점�
     MD_,
     GO,
     LOAD,
+    P,
     MC,
     CODE,
     DATA,
     STACK,
-    P,
+
     EXIT_NUM,
 };
 
@@ -57,8 +58,6 @@ int Register_Display(void *, int);
 int Memory_Display(void *, int);
 int Memory_Display_Status(void *, int);
 int Display_Memory_Map(void *, int);
-int Memory_Display_Data(void *, int);
-int Memory_Display_Stack(void *, int);
 int Quit(void *, int);
 int Help(void *, int);
 int Go(void *, int);
@@ -80,6 +79,8 @@ static unsigned char *data;
 static unsigned char *stack;
 
 static Context cpu_info;
+
+static int add_address = 0;
 
 int main()
 {
@@ -138,7 +139,7 @@ int main()
         putchar(' ');
 
         fgets(command, COMMAND_LEN, stdin); /* 메뉴를 입력받는다. */
-
+        
         /* 대소문자 구별없이 입력받기 위해, 모든 문자를 대문자로 바꾼다. */
         for(i_len = strlen(command) - 1;i_len >= 0;--i_len) 
         {
@@ -152,7 +153,17 @@ int main()
                 break;
             }
         }
-        
+
+        if(0x0A == command[0])  /* 엔터키만 눌러 졌을 때  */
+        {
+            if((mem <= vp) && (mem_end >= vp)) /* 메모리가 동적할당 받은 범위를 벗어나서 런타임 에러를 일으키지 않게 한다. */
+            {
+                add_address = add_address + 256; /* 16 x 16 으로 다음 페이지 만큼 넣어둔다. */
+                printf("Next page of memory.\n");
+                Display_Memory_Map(vp, add_address); /* 인자로 인자로 받았던 값과 추가할 값을 넣는다. */
+            }
+        }
+
         if(0 != p_map -> cmdCommand) /* 유효한 명령을 입력 했는가? 를 검사 */
         {
             vp = 0;
@@ -201,6 +212,7 @@ int main()
                 break;
             }
             
+            add_address = 0;                       /* 초기화 */
             (*(p_map -> cmdfp))(vp, i_len); /* 함수 호출 */
         }
     } 
@@ -264,9 +276,10 @@ int Memory_Display(void *vp, int i_not_use) /* 입력받은 위치의 메모리 
     return MD(ucp);
 }
 
-int Display_Memory_Map(void *vp, int i_not_use) /* 메모리의 CODE 영역의 Hex map을 출력한다. */
+int Display_Memory_Map(void *vp, int i) /* 메모리의 CODE 영역의 Hex map을 출력한다. */
 {
-    hex_viewer(vp);
+    hex_viewer(((int)vp + i));
+
     return 0;
 }
 
