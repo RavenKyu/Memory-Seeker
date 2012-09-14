@@ -4,14 +4,14 @@
 #include <fcntl.h> /* oflag를 사용하기 위해서 포함. */
 #include <sys/types.h>
 #include <sys/stat.h>
-
-#include "hex_viewer.h"
 #include <malloc.h>
 #include <windows.h>
 
-#define COMMAND_LEN             100
+#include "hex_viewer.h"
+
+#define COMMAND_LEN             100 /* 입력을 받을 수 있는 최대 명령어 길이 */
 #define MAX_PROGRAM_SIZE        0x10000 /* 적재할 프로그램의 최대 크기의 1/2 */
-#define SECTION_SIZE            512
+#define SECTION_SIZE            512     /* 각 메모리 섹션이 가지는 크기 */
 
 enum CommandNum                 /* enum은 숫자를 문자화 시키는 장점을 활용 */
 {
@@ -26,6 +26,7 @@ enum CommandNum                 /* enum은 숫자를 문자화 시키는 장점�
     MC,
     CODE,
     DATA,
+    STACK,
     P,
     EXIT_NUM,
 };
@@ -57,21 +58,20 @@ int Memory_Display(void *, int);
 int Memory_Display_Status(void *, int);
 int Memory_Display_Code(void *, int);
 int Memory_Display_Data(void *, int);
+int Memory_Display_Stack(void *, int);
 int Quit(void *, int);
 int Help(void *, int);
 int Go(void *, int);
 int Load(void *, int);
 int Clear_mem(void *, int);
 
-
 /* 어셈블리 함수 원형 ----------------------------------- */
 void STST(Context *);           /* 메모리의 상태를 보여 준다. */
-void LDST(Context *);   
+void LDST(Context *);           /* 데이터를 메모리에 적재한다. */
 
 /* char MD(void *); */
 unsigned char MD(void *);       /* unsigned 형으로 선언하지 않으면 앞자리가
                                  * 8이라면 부호처리를 시도해서 마이너스가된다. */
-
 static unsigned char *mem;      
 static unsigned char *mem_end;
 
@@ -88,7 +88,6 @@ int main()
     void *vp;                   /* 인수로 사용, 주소 */
     int i_len;
     
-   
     CommandMap *p_map;
     
     CommandMap c_map[] =
@@ -106,6 +105,7 @@ int main()
             {"MC\n",  Clear_mem, MC},
             {"CODE\n",  Memory_Display_Code, CODE},
             {"DATA\n",  Memory_Display_Data, DATA},
+            {"STACK\n",  Memory_Display_Stack, STACK},
             {0, 0}
         };
 
@@ -124,8 +124,7 @@ int main()
 
     STST(&cpu_info);           /* 구조체 cpu_info에 레지스터의 주소를 저장  */
 
-    Memory_Display_Status(0, 0);
-    
+    Memory_Display_Status(0, 0); /* 메모리의 주소 범위를 보여준다. */
     
     printf("Enable range of Dynamic Memory Address :: %08X ~ %08X\n", mem, mem_end); /* 0 부터 시작하므로 -1을 한다. */
     
@@ -187,6 +186,15 @@ int main()
                 break;
 
             case MC:
+                break;
+
+            case CODE:
+                break;
+
+            case DATA:
+                break;
+
+            case STACK:
                 break;
             }
             
@@ -255,17 +263,23 @@ int Memory_Display(void *vp, int i_not_use) /* 입력받은 위치의 메모리 
 
 int Memory_Display_Code(void *vp, int i_not_use) /* 메모리의 CODE 영역의 Hex map을 출력한다. */
 {
-    hex_viewer(0x430000);
+    hex_viewer(code);
     return 0;
 }
 
 int Memory_Display_Data(void *vp, int i_not_use) /* 메모리의 DATA 영역의 Hex map을 출력한다. */
 {
-    hex_viewer(0x432000);
+    hex_viewer(data);
     return 0;
 }
-    
-int Go(void *v_not_use, int i_not_use)
+
+int Memory_Display_Stack(void *v_not_use, int i_not_use) /* 메모리의 STACK 영역을 출력한다. */
+{
+    hex_viewer(stack - 0xff);   /* 스택의 맨 아랫부분이 끝에 맞춰서 출력 될 수 있게 해준다. */
+    return 0;
+}
+
+int Go(void *v_not_use, int i_not_use) /* 메모리에 적재된 프로그램을 실행한다. */
 {
     Context cpu_temp;
     memset(&cpu_temp, 0, sizeof(Context));
@@ -281,9 +295,11 @@ int Go(void *v_not_use, int i_not_use)
 }
 
 
-int Clear_mem(void *v_not_use, int i_not_use)
+int Clear_mem(void *v_not_use, int i_not_use) /* 메모리를 초기화 시켜준다. */
 {
     memset(code, 0, MAX_PROGRAM_SIZE);
+
+    return 0;
 }
 
 
