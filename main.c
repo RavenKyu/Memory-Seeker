@@ -292,7 +292,7 @@ int Memory_Display(void *vp, int add_address) /* 입력받은 위치의 메모�
         scanf_s("%x", &vp);
         add_address = 0;		/* 다음 페이지로 넘어가기 위해서 0으로 설정 */
     }
-    hex_viewer((unsigned char *)((int)vp + add_address)); /* 메모리 맵을 출력한다. */
+    hex_viewer((unsigned char *)((int)vp + add_address), 15); /* 메모리 맵을 출력한다. */
 	
     return vp;
 }
@@ -302,17 +302,18 @@ int Memory_Modify(void *vp, int i_not_use) /* 입력 받은 주소의 값을 바
     unsigned int val;
     unsigned int address;
 
-    printf("Enter the address where you want to modify the value.\n\(0x%08X ~ 0x%08X\ >)", mem, mem_end);
+    printf("Enter the address where you want to modify the value.\n\(0x%08X ~ 0x%08X\) : ", mem, mem_end);
     scanf_s("%x", &address);    /* 주소를 입력 받는다. */
 
-    hex_viewer(address);        /* 입력받은 주소의 메모리 맵을 출력한다. */
+    hex_viewer(address, 0);        /* 입력받은 주소의 메모리 맵을 출력한다. */
 
     printf("Put a value in HEX you want to change at 0x%08X : ", address);
     scanf_s("%x", &val);        /* 바꿀 값을 HEX 코드로 입력 받는다. */
 
     memset(address, val, 1);    /* 해당 위치의 값을 바꾼다. */
-    
-    printf("Modified the value, %x in 0x%08X\n ", val, vp);
+
+    hex_viewer(address, 0); /* 바뀐 값을 확인 할 수 있도록 맵을 출력한다. */
+    printf("Modified the value, [%x] in 0x%08X\n", val, address);
     
     return vp;
 }
