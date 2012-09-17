@@ -25,6 +25,7 @@ enum CommandNum                 /* enum은 숫자를 문자화 시키는 장점�
     LOAD,
     P,
     MC,
+    MM,
     CODE,
     DATA,
     STACK,
@@ -56,6 +57,7 @@ typedef struct _CommandMap
 /* C 언어 함수 원형 ------------------------------------- */
 int Register_Display(void *, int);
 int Memory_Display(void *, int);
+int Memory_Modify(void *, int);
 int Memory_Display_Status(void *, int);
 int Quit(void *, int);
 int Help(void *, int);
@@ -100,6 +102,7 @@ int main()
             {"H\n",     Help, H},
             {"?\n",     Help, H},
             {"MD\n",    Memory_Display, MD_},
+            {"MM\n",    Memory_Modify, MM},            
             {"GO\n",    Go, GO},
             {"LOAD\n",  Load, LOAD},
             {"MC\n",  Clear_mem, MC},
@@ -155,7 +158,6 @@ int main()
 
         if(0x0A == command[0])  /* 엔터키만 눌러 졌을 때  */
         {
-			printf("%08X\n", vp);
             if((mem <= vp) && (mem_end >= vp)) /* 메모리가 동적할당 받은 범위를 벗어나서 런타임 에러를 일으키지 않게 한다. */
             {
                 add_address = add_address + 256; /* 16 x 16 으로 다음 페이지 만큼 넣어둔다. */
@@ -166,71 +168,71 @@ int main()
 
         if(0 != p_map -> cmdCommand) /* 유효한 명령을 입력 했는가? 를 검사 */
         {
-			switch(p_map -> cmd_num) /* 함수 인자를 설정한다. */
+            switch(p_map -> cmd_num) /* 함수 인자를 설정한다. */
             {
             case REGISTER_DISPLAY:
                 vp = &cpu_info;
-				i_len = 0;
+                i_len = 0;
                 break;
         
             case QUIT:
-				vp = 0;
-				i_len = 0;
+                vp = 0;
+                i_len = 0;
                 break;
                 
             case Q:
-				vp = 0;
-				i_len = 0;
+                vp = 0;
+                i_len = 0;
                 break;
 
             case H:
-				vp = 0;
-				i_len = 0;
+                vp = 0;
+                i_len = 0;
                 break;
 
             case HELP:
-				vp = 0;
-				i_len = 0;
+                vp = 0;
+                i_len = 0;
                 break;
 
             case MD_:
-				i_len = -1;
+                i_len = -1;
                 break;
 
             case GO:
-				vp = 0;
-				i_len = 0;
+                vp = 0;
+                i_len = 0;
                 break;
 
             case LOAD:
-				vp = 0;
-				i_len = 0;
+                vp = 0;
+                i_len = 0;
                 break;
 
             case MC:
-				vp = 0;
-				i_len = 0;
+                vp = 0;
+                i_len = 0;
                 break;
 
             case CODE:
-				vp = 0;
-				i_len = 0;
+                vp = 0;
+                i_len = 0;
                 vp = code;
                 break;
 
             case DATA:
-				vp = data;
-				i_len = 0;
+                vp = data;
+                i_len = 0;
                 break;
 
             case STACK:
                 vp = stack - 0xff;
-				i_len = 0;
-				break;
+                i_len = 0;
+                break;
             }
             
             add_address = -1;                       /* 초기화 */
-            vp = (*(p_map -> cmdfp))(vp, i_len); /* 함수 호출 */
+            vp = (*(p_map -> cmdfp))(vp, i_len); /* 함수 호출 */            
         }
     } 
     
@@ -264,7 +266,7 @@ int Quit(void *V_not_use, int i_not_use)
     return 0;
 }
 
-int Help(void *v_not_use, int i_not_use)
+int Help(void *v_not_use, int i_not_use) /* 도움말을 출력한다. */
 {
     printf("R         : Register Value Display\n");
     printf("P         : Memory Status Display\n");
@@ -284,14 +286,34 @@ int Help(void *v_not_use, int i_not_use)
 
 int Memory_Display(void *vp, int add_address) /* 입력받은 위치의 메모리 맵을 보여 준다. */
 {
-	if(0 > add_address)			/* add_address가 음수라면 주소값을 받도록 한다. MD 기능을 사용하게 한다. */
-	{
-		printf("Enter Address you want as Hex : ");
-		scanf_s("%x", &vp);
-		add_address = 0;		/* 다음 페이지로 넘어가기 위해서 0으로 설정 */
-	}
-	hex_viewer((unsigned char *)((int)vp + add_address)); /* 메모리 맵을 출력한다. */
+    if(0 > add_address)			/* add_address가 음수라면 주소값을 받도록 한다. MD 기능을 사용하게 한다. */
+    {
+        printf("Enter Address you want in Hex : ");
+        scanf_s("%x", &vp);
+        add_address = 0;		/* 다음 페이지로 넘어가기 위해서 0으로 설정 */
+    }
+    hex_viewer((unsigned char *)((int)vp + add_address)); /* 메모리 맵을 출력한다. */
 	
+    return vp;
+}
+
+int Memory_Modify(void *vp, int i_not_use) /* 입력 받은 주소의 값을 바꿔준다. */
+{
+    unsigned int val;
+    unsigned int address;
+
+    printf("Enter the address where you want to modify the value.\n\(0x%08X ~ 0x%08X\ >)", mem, mem_end);
+    scanf_s("%x", &address);    /* 주소를 입력 받는다. */
+
+    hex_viewer(address);        /* 입력받은 주소의 메모리 맵을 출력한다. */
+
+    printf("Put a value in HEX you want to change at 0x%08X : ", address);
+    scanf_s("%x", &val);        /* 바꿀 값을 HEX 코드로 입력 받는다. */
+
+    memset(address, val, 1);    /* 해당 위치의 값을 바꾼다. */
+    
+    printf("Modified the value, %x in 0x%08X\n ", val, vp);
+    
     return vp;
 }
 
