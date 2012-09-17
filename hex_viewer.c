@@ -28,18 +28,28 @@ int hex_viewer(unsigned char *address, int line)
     printf("  ");               /* 공백을 맞추기 위함. */
     for(i_cnt = 0;i_cnt <= 15;++i_cnt)
     {
-        printf("%02X ", ((unsigned char)c_num_ptr + i_cnt));
+        printf("%02X ", ((unsigned char)((char)c_num_ptr & 0x0f) + i_cnt)); /* 해당 주소를 쉽게 찾을 수 있게 변경. */
         //fprintf(fpout, "%02X ",((unsigned char)c_num_ptr + i_cnt));
     }
     // 주소 마지막 바이트 출력 끝.
-
-    printf("0123456789ABCDEF\n"); /* ASCII CODE가 출력되는 곳의 주소가이드 */
-
+    
+    i_loop = (unsigned char)c_num_ptr & 0xf; /* ASCII CODE의 가이드 문자는 첫 번째 번지의 주소를 참조하여 차례로 출력. */
+    for(i_cnt = 0; i_cnt <= 15; ++i_cnt)
+    {
+        if(15 < i_loop)
+        {
+            i_loop = 0x00;
+        }
+        printf("%X", i_loop); /* ASCII CODE가 출력되는 곳의 주소가이드 */
+        i_loop = i_loop + 1;
+    }
+    putchar('\n');
+    
     // 몸체 시작. : 주소와 해당 주소의 실제값을 1 바이트 단위로 출력, 아스키 코드 표시.
     for(i_loop = 0; i_loop <= line; ++i_loop) // 몇 줄의 주소를 띄울 것인가를 i_loop의 비교값으로 결정.
     {
-        printf("0x%08x ", c_num_ptr); // 주소 출력
-        fprintf(fpout, "%08x ", c_num_ptr); // 텍스트 파일 출력.
+        printf("0x%08X ", c_num_ptr); // 주소 출력
+        fprintf(fpout, "%08X ", c_num_ptr); // 텍스트 파일 출력.
 
         // 1바이트씩 주소 값을 출력 시작. :
         for(i_cnt = 0;i_cnt <= 15;++i_cnt)
