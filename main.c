@@ -332,6 +332,7 @@ int Memory_Modify(void *vp, int i_not_use) /* 입력 받은 주소의 값을 바
         {
             return 0;
         }
+        fflush(stdin);      /* 키보드 버퍼를 비움으로서 무한루프를 막는다. */
     }
     
     hex_viewer(address, 0);        /* 입력받은 주소의 메모리 맵을 출력한다. */
@@ -405,6 +406,7 @@ int Load(void *v_not_use, int i_not_use)           /* 프로그램을 할당받�
     {
         Read_Num = read(infd, code, MAX_PROGRAM_SIZE);
     }
+
 
     /* 파일 열기에 성공했을 경우에 파일을 한번 읽는다. */
     if(0 > Read_Num)            /* 파일을 열었으나, 읽어오는 것에 실패 */
