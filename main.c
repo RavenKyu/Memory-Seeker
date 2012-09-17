@@ -373,6 +373,7 @@ int Clear_mem(void *v_not_use, int i_not_use) /* 메모리를 초기화 시켜�
 {
     memset(code, 0, MAX_PROGRAM_SIZE);
 
+    printf("Memory Initialization is done.\n");
     return 0;
 }
 
@@ -391,7 +392,7 @@ int Load(void *v_not_use, int i_not_use)           /* 프로그램을 할당받�
 
     Clear_mem(0, 0);            /* 메모리를 깨긋히 비워준다. */
 
-    printf("\nEnter the file name you want to load : "); /* 메모리에 적재할 파일을 불러온다. */
+    printf("Enter the file name you want to load : "); /* 메모리에 적재할 파일을 불러온다. */
     scanf("%s", File_Name);
 
     infd = open(File_Name, O_RDONLY | O_BINARY); /* 파일을 읽기전용과 바이너리 모드로 열어서 핸들러에 넣는다. */
