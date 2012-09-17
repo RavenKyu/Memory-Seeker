@@ -402,7 +402,7 @@ int Load(void *v_not_use, int i_not_use)           /* 프로그램을 할당받�
     Clear_mem(0, 0);            /* 메모리를 깨긋히 비워준다. */
 
     printf("Enter the file name you want to load : "); /* 메모리에 적재할 파일을 불러온다. */
-    scanf_s("%s", File_Name);
+    scanf("%s", File_Name);
 
     infd = open(File_Name, O_RDONLY | O_BINARY); /* 파일을 읽기전용과 바이너리 모드로 열어서 핸들러에 넣는다. */
     if(0 > infd)                      /* 파일 열기에 실패 했을 경우, 에러 메세지 출력 후, 종료. */
