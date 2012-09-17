@@ -219,7 +219,6 @@ int main()
                 break;
 
             case CODE:
-                vp = 0;
                 i_len = 0;
                 vp = code;
                 break;
@@ -356,10 +355,15 @@ int Go(void *v_not_use, int i_not_use) /* 메모리에 적재된 프로그램을
     cpu_temp.eax = (unsigned int)&cpu_info;
     cpu_temp.eip = (unsigned int)code;
     cpu_temp.esp = (unsigned int)mem_end - 1;
-    
+
+    if(0x00 == *code)           /* code 영역의 첫번째 번지에 값이 0일 경우 프로그램이 로드되지 않은것 으로 간주 */
+    {
+        printf("There is no program to run. You should load a program first. ex) t1.bin\n");
+        return 0;               /* 에러 메세지를 출력하고, 프로그램이 강제 종료되는 것을 막는다. */
+    }
     LDST(&cpu_temp);
 
-    printf("Kernel panic!\n");
+    printf("Kernel panic!\n");  /* 프로그램은 올라갔으나 제대로 수행하지 못하고 나왔을 경우, 커널패닉. */
     return 0;
 }
 
