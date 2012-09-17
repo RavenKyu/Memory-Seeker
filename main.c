@@ -165,7 +165,11 @@ int main()
                 Memory_Display(vp, add_address); /* 인자로 인자로 받았던 값과 추가할 값을 넣는다. */
             }
         }
-
+        else if((p_map -> cmdCommand == 0) && (0x0A != command[0])) /* 잘못된 명령어를 받았을 때 Help함수를 호출한다. */
+        {
+            Help(0, 0);
+        }
+        
         if(0 != p_map -> cmdCommand) /* 유효한 명령을 입력 했는가? 를 검사 */
         {
             switch(p_map -> cmd_num) /* 함수 인자를 설정한다. */
@@ -242,10 +246,10 @@ int main()
 int Register_Display(void *r, int not_use)
 {
     printf("EAX :: %08X\n", ((Context *)r) -> eax);
-    printf("EBX :: %08X\n", ((Context *)r) -> ebx);
     printf("ECX :: %08X\n", ((Context *)r) -> ecx);
     printf("EDX :: %08X\n", ((Context *)r) -> edx);
-
+    printf("EBX :: %08X\n", ((Context *)r) -> ebx);
+    
     printf("ESP :: %08X\n", ((Context *)r) -> esp);
     printf("EBP :: %08X\n", ((Context *)r) -> ebp);
 
