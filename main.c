@@ -87,7 +87,7 @@ int main()
 {
     char command[COMMAND_LEN];
 
-    void *vp;                   /* 인수로 사용, 주소 */
+    void *vp = 0;                   /* 인수로 사용, 주소 */
     int i_len;
     
     CommandMap *p_map;
@@ -158,7 +158,11 @@ int main()
 
         if(0x0A == command[0])  /* 엔터키만 눌러 졌을 때  */
         {
-            if((mem <= vp) && (mem_end >= vp)) /* 메모리가 동적할당 받은 범위를 벗어나서 런타임 에러를 일으키지 않게 한다. */
+            if(((int)vp + 256 >= stack) && (0 != vp))                /* 현재 받은 주소값이 스택보다 많고, 기본 값인 0이 아닐때. */
+            {
+                printf("We've reached the bottom of STACK. It's not allow to go down.\n"); 
+            }
+            else if((mem <= vp) && (mem_end >= vp)) /* 메모리가 동적할당 받은 범위를 벗어나서 런타임 에러를 일으키지 않게 한다. */
             {
                 add_address = add_address + 256; /* 16 x 16 으로 다음 페이지 만큼 넣어둔다. */
                 printf("Next page of memory.\n");
@@ -289,7 +293,6 @@ int Help(void *v_not_use, int i_not_use) /* 도움말을 출력한다. */
 
 int Memory_Display(void *vp, int add_address) /* 입력받은 위치의 메모리 맵을 보여 준다. */
 {
-    printf("%d\n", add_address);
     if(0 > add_address)			/* add_address가 음수라면 주소값을 받도록 한다. MD 기능을 사용하게 한다. */
     {
         vp = 0;
@@ -315,7 +318,7 @@ int Memory_Display(void *vp, int add_address) /* 입력받은 위치의 메모�
     {
         add_address = add_address + 1;
     }
-    hex_viewer((unsigned char *)((int)vp + add_address), 15); /* 메모리 맵을 출력한다. */
+    hex_viewer((unsigned char *)((int)vp + add_address), stack, 15); /* 메모리 맵을 출력한다. */
 	
     return vp;
 }
@@ -341,14 +344,14 @@ int Memory_Modify(void *vp, int i_not_use) /* 입력 받은 주소의 값을 바
         fflush(stdin);      /* 키보드 버퍼를 비움으로서 무한루프를 막는다. */
     }
     
-    hex_viewer(address, 0);        /* 입력받은 주소의 메모리 맵을 출력한다. */
+    hex_viewer(address, stack, 0);        /* 입력받은 주소의 메모리 맵을 출력한다. */
 
     printf("Put a value in HEX you want to change at 0x%08X : ", address);
     scanf_s("%x", &val);        /* 바꿀 값을 HEX 코드로 입력 받는다. */
 
     memset(address, val, 1);    /* 해당 위치의 값을 바꾼다. */
 
-    hex_viewer(address, 0); /* 바뀐 값을 확인 할 수 있도록 맵을 출력한다. */
+    hex_viewer(address, stack, 0); /* 바뀐 값을 확인 할 수 있도록 맵을 출력한다. */
     printf("Modified the value, [%x] in 0x%08X\n", val, address);
     
     return vp;
