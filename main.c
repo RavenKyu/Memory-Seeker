@@ -289,6 +289,7 @@ int Help(void *v_not_use, int i_not_use) /* 도움말을 출력한다. */
 
 int Memory_Display(void *vp, int add_address) /* 입력받은 위치의 메모리 맵을 보여 준다. */
 {
+    printf("%d\n", add_address);
     if(0 > add_address)			/* add_address가 음수라면 주소값을 받도록 한다. MD 기능을 사용하게 한다. */
     {
         vp = 0;
@@ -308,6 +309,11 @@ int Memory_Display(void *vp, int add_address) /* 입력받은 위치의 메모�
             fflush(stdin);      /* 키보드 버퍼를 비움으로서 무한루프를 막는다. */
         }
         add_address = 0;		/* 다음 페이지로 넘어가기 위해서 0으로 설정 */
+    }
+    
+    if(0 != add_address)        /* 메모리 맵 출력시 메뉴 구조상 빠지는 -1을 보정해준다. */
+    {
+        add_address = add_address + 1;
     }
     hex_viewer((unsigned char *)((int)vp + add_address), 15); /* 메모리 맵을 출력한다. */
 	
