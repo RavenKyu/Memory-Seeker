@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include "hex_viewer.h"
 
-int hex_viewer(unsigned char *address)
+int hex_viewer(unsigned char *address, int line)
 {
     int i_loop;
     int i_cnt;
@@ -36,7 +36,7 @@ int hex_viewer(unsigned char *address)
     printf("0123456789ABCDEF\n"); /* ASCII CODE가 출력되는 곳의 주소가이드 */
 
     // 몸체 시작. : 주소와 해당 주소의 실제값을 1 바이트 단위로 출력, 아스키 코드 표시.
-    for(i_loop = 0; i_loop <= 15; ++i_loop) // 몇 줄의 주소를 띄울 것인가를 i_loop의 비교값으로 결정.
+    for(i_loop = 0; i_loop <= line; ++i_loop) // 몇 줄의 주소를 띄울 것인가를 i_loop의 비교값으로 결정.
     {
         printf("0x%08x ", c_num_ptr); // 주소 출력
         fprintf(fpout, "%08x ", c_num_ptr); // 텍스트 파일 출력.
