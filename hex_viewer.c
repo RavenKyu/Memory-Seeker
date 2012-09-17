@@ -90,5 +90,5 @@ int hex_viewer(unsigned char *address, unsigned char *stack_point, int line)
     putchar('\n');
     fclose(fpout); // 파일을 닫아준다.
 
-    return c_num_ptr;
+    return 0;
 }

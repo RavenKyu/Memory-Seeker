@@ -158,7 +158,7 @@ int main()
 
         if(0x0A == command[0])  /* 엔터키만 눌러 졌을 때  */
         {
-            if(((int)vp + 256 >= stack) && (0 != vp))                /* 현재 받은 주소값이 스택보다 많고, 기본 값인 0이 아닐때. */
+            if(((int)vp + 256 >= (int)stack) && (0 != vp))                /* 현재 받은 주소값이 스택보다 많고, 기본 값인 0이 아닐때. */
             {
                 printf("We've reached the bottom of STACK. It's not allow to go down.\n"); 
             }
@@ -239,7 +239,7 @@ int main()
             }
             
             add_address = -1;                       /* 초기화 */
-            vp = (*(p_map -> cmdfp))(vp, i_len); /* 함수 호출 */            
+            (int)vp = (*(p_map -> cmdfp))(vp, i_len); /* 함수 호출 */            
         }
     } 
     
@@ -302,7 +302,7 @@ int Memory_Display(void *vp, int add_address) /* 입력받은 위치의 메모�
             {
                 break;
             }
-            printf("Enter Address you want to display. '0' for Cancel.\n\(0x%08X ~ 0x%08X\) : ", mem, mem_end);
+            printf("Enter Address you want to display. '0' for Cancel.\n[0x%08X ~ 0x%08X] : ", mem, mem_end);
             scanf_s("%x", &vp);
             
             if(0 == vp)         /* 숫자 0을 입력 받으면 명령을 취소 할 수 있다. */
@@ -320,13 +320,13 @@ int Memory_Display(void *vp, int add_address) /* 입력받은 위치의 메모�
     }
     hex_viewer((unsigned char *)((int)vp + add_address), stack, 15); /* 메모리 맵을 출력한다. */
 	
-    return vp;
+    return (int)vp;
 }
 
 int Memory_Modify(void *vp, int i_not_use) /* 입력 받은 주소의 값을 바꿔준다. */
 {
     unsigned int val = 0;
-    unsigned int address = 1;
+    unsigned char *address = NULL;
 
     while(1)                    /* 허용된 범위 안의 주소값을 받을 때까지 입력문을 무한루프 돌린다. */
     {
@@ -334,7 +334,7 @@ int Memory_Modify(void *vp, int i_not_use) /* 입력 받은 주소의 값을 바
         {
             break;
         }
-        printf("Enter the address where you want to modify the value. '0' for Cancel.\n\(0x%08X ~ 0x%08X\)  : ", mem, mem_end);
+        printf("Enter the address where you want to modify the value. '0' for Cancel.\n[0x%08X ~ 0x%08X]  : ", mem, mem_end);
         scanf_s("%x", &address);    /* 주소를 입력 받는다. */
 
         if(0 == address)        /* 숫자 0 을 입력 받으면 기능 취소 */
@@ -354,7 +354,7 @@ int Memory_Modify(void *vp, int i_not_use) /* 입력 받은 주소의 값을 바
     hex_viewer(address, stack, 0); /* 바뀐 값을 확인 할 수 있도록 맵을 출력한다. */
     printf("Modified the value, [%x] in 0x%08X\n", val, address);
     
-    return vp;
+    return (int)vp;
 }
 
 int Go(void *v_not_use, int i_not_use) /* 메모리에 적재된 프로그램을 실행한다. */
@@ -402,7 +402,7 @@ int Load(void *v_not_use, int i_not_use)           /* 프로그램을 할당받�
     Clear_mem(0, 0);            /* 메모리를 깨긋히 비워준다. */
 
     printf("Enter the file name you want to load : "); /* 메모리에 적재할 파일을 불러온다. */
-    scanf("%s", File_Name);
+    scanf_s("%s", File_Name);
 
     infd = open(File_Name, O_RDONLY | O_BINARY); /* 파일을 읽기전용과 바이너리 모드로 열어서 핸들러에 넣는다. */
     if(0 > infd)                      /* 파일 열기에 실패 했을 경우, 에러 메세지 출력 후, 종료. */
