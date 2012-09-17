@@ -292,8 +292,22 @@ int Memory_Display(void *vp, int add_address) /* 입력받은 위치의 메모�
 {
     if(0 > add_address)			/* add_address가 음수라면 주소값을 받도록 한다. MD 기능을 사용하게 한다. */
     {
-        printf("Enter Address you want in Hex : ");
-        scanf_s("%x", &vp);
+        vp = 0;
+        while(1)
+        {
+            if((mem <= vp) && (mem_end >= vp)) /* 범위내의 값을 입력 받을 때까지 계속적으로 입력 요구 */
+            {
+                break;
+            }
+            printf("Enter Address you want to display. '0' for Cancel.\n\(0x%08X ~ 0x%08X\) : ", mem, mem_end);
+            scanf_s("%x", &vp);
+            
+            if(0 == vp)         /* 숫자 0을 입력 받으면 명령을 취소 할 수 있다. */
+            {
+                return 0;
+            }
+            fflush(stdin);      /* 키보드 버퍼를 비움으로서 무한루프를 막는다. */
+        }
         add_address = 0;		/* 다음 페이지로 넘어가기 위해서 0으로 설정 */
     }
     hex_viewer((unsigned char *)((int)vp + add_address), 15); /* 메모리 맵을 출력한다. */
