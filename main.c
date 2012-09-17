@@ -303,12 +303,24 @@ int Memory_Display(void *vp, int add_address) /* 입력받은 위치의 메모�
 
 int Memory_Modify(void *vp, int i_not_use) /* 입력 받은 주소의 값을 바꿔준다. */
 {
-    unsigned int val;
-    unsigned int address;
+    unsigned int val = 0;
+    unsigned int address = 1;
 
-    printf("Enter the address where you want to modify the value.\n\(0x%08X ~ 0x%08X\) : ", mem, mem_end);
-    scanf_s("%x", &address);    /* 주소를 입력 받는다. */
+    while(1)                    /* 허용된 범위 안의 주소값을 받을 때까지 입력문을 무한루프 돌린다. */
+    {
+        if((mem <= address) && (mem_end >= address)) 
+        {
+            break;
+        }
+        printf("Enter the address where you want to modify the value. '0' for Cancel.\n\(0x%08X ~ 0x%08X\)  : ", mem, mem_end);
+        scanf_s("%x", &address);    /* 주소를 입력 받는다. */
 
+        if(0 == address)        /* 숫자 0 을 입력 받으면 기능 취소 */
+        {
+            return 0;
+        }
+    }
+    
     hex_viewer(address, 0);        /* 입력받은 주소의 메모리 맵을 출력한다. */
 
     printf("Put a value in HEX you want to change at 0x%08X : ", address);
