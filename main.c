@@ -345,6 +345,14 @@ int Memory_Modify(void *vp, int i_not_use) /* 입력 받은 주소의 값을 바
     }
     
     hex_viewer(address, stack, 0);        /* 입력받은 주소의 메모리 맵을 출력한다. */
+    
+    if(((code <= address) && ((code + SECTION_SIZE) >= address)) && 0 != *code) /* 테스트 프로그램이 메모리에 올라가 있는 상태에서 CODE 영역을
+                                                                                 * 수정 하려고 하면 경고 메세지를 보낸다.*/
+    {
+        printf("WARNING :: A program is on the memory now.          :: WARNING\n");
+        printf("WARNING :: You're trying to touch on CODE section.  :: WARNING\n");
+        printf("WARNING :: Touching CODE area causes a fatal error. :: WARNING\n\n");
+    }
 
     printf("Put a value in HEX you want to change at 0x%08X : ", address);
     scanf_s("%x", &val);        /* 바꿀 값을 HEX 코드로 입력 받는다. */
