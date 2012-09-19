@@ -48,28 +48,46 @@ int hex_viewer(unsigned char *address, unsigned char *stack_point, int line)
     // 몸체 시작. : 주소와 해당 주소의 실제값을 1 바이트 단위로 출력, 아스키 코드 표시.
     for(i_loop = 0; i_loop <= line; ++i_loop) // 몇 줄의 주소를 띄울 것인가를 i_loop의 비교값으로 결정.
     {
-
         printf("0x%08X ", c_num_ptr); // 주소 출력
         fprintf(fpout, "%08X ", c_num_ptr); // 텍스트 파일 출력.
 
         // 1바이트씩 주소 값을 출력 시작. :
-        for(i_cnt = 0;i_cnt <= 15;++i_cnt)
+        i_cnt = 0;
+        while(1)
         {
+            if(i_cnt >= 16)     /* 16개를 출력하면 빠져 나간다. */
+            {
+                break;
+            }
+            
             if(c_num_ptr + i_cnt > stack_point) /* 스택 이상의 값은 출력하지 않는다. */
             {
-                printf("| The Bottom of Stack. |\n");
-
-                return 0;
+                printf("|  ");  /* 터플 한 칸과 공백 두 칸 */
+                
+                for(i_cnt = i_cnt + 1; i_cnt <= 15; ++i_cnt) /* 나머지 부분은 빈 공간으로 지나간다. */
+                {
+                    printf("   "); /* 16진수 두자리와 공백, 총 세칸 */
+                }
+                break;
             }
-        
+
             printf("%02x ", MD(address + i_cnt));
             fprintf(fpout, "%02x ", *(c_num_ptr + i_cnt)); // 텍스트 파일 출력.
+
+            ++i_cnt;
         }
         // 1바이트씩 주소 값을 출력 끝. :
 
         // 값에 대한 아스키 코드 출력 시작.
         for(i_cnt = 0;i_cnt <= 15;++i_cnt)
         {
+            if(c_num_ptr + i_cnt > stack_point) /* 스택 이상의 값은 출력하지 않는다. */
+            {
+                printf("|\n");
+
+                return 0;
+            }
+                        
             if(' ' < MD(address + i_cnt)) // 제어문자 스페이스의 십진수 값은 32.
             { // 이 값보다 출력 값이 크면 해당 아스키를 뿌리는데 이때
                 printf("%c", MD(address + i_cnt)); // 제대로 표현할 확장 아스키를 걸러주기 위해 signed char 캐스팅.
